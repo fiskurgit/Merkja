@@ -26,6 +26,16 @@ val simpleMDRenderer = SimpleMDRenderer(text_view) { matchEvent ->
     }
 }
 simpleMDRenderer.render()
+
+...
+
+fun loadImage(matchEvent: MatchEvent){
+    //fetch image async then:
+    runOnUiThread {
+        simpleMDRenderer.insertImage(bitmap, matchEvent)
+    }
+}
+
 ```
 
 ---
