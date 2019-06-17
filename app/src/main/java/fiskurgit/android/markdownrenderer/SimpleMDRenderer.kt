@@ -96,22 +96,22 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val range: Int = RANGE_DEFAULT
     )
 
-    private val h1Pattern = Pattern.compile("#\\s.*\\n")
+    private val h1Pattern = Pattern.compile("^#\\s.*\\n")
     private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, black,null, Typeface.BOLD, 2.0f)
 
-    private val h2Pattern = Pattern.compile("##\\s.*\\n")
+    private val h2Pattern = Pattern.compile("^##\\s.*\\n")
     private val h2Scheme = MDScheme(SCHEME_H2, h2Pattern, black, null, Typeface.BOLD, 1.8f)
 
-    private val h3Pattern = Pattern.compile("###\\s.*\\n")
+    private val h3Pattern = Pattern.compile("^###\\s.*\\n")
     private val h3Scheme = MDScheme(SCHEME_H3, h3Pattern, black, null, Typeface.BOLD, 1.6f)
 
-    private val h4Pattern = Pattern.compile("####\\s.*\\n")
+    private val h4Pattern = Pattern.compile("^####\\s.*\\n")
     private val h4Scheme = MDScheme(SCHEME_H4, h4Pattern, black, null, Typeface.BOLD, 1.4f)
 
-    private val h5Pattern = Pattern.compile("#####\\s.*\\n")
+    private val h5Pattern = Pattern.compile("^#####\\s.*\\n")
     private val h5Scheme = MDScheme(SCHEME_H5, h5Pattern, black, null, Typeface.BOLD, 1.2f)
 
-    private val h6Pattern = Pattern.compile("######\\s.*\\n")
+    private val h6Pattern = Pattern.compile("^######\\s.*\\n")
     private val h6Scheme = MDScheme(SCHEME_H6, h6Pattern, black, null, Typeface.BOLD, 1.0f)
 
     private val boldPattern = Pattern.compile("\\*\\*.*\\*\\*")

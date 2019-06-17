@@ -1,14 +1,18 @@
-### Markdown
+# Simple Markdown Renderer
 
-### A demo markdown file
+## Supported
 
-### Hello World
+* Headers # to ######
+* **Bold**
+* _Emphasis_
+* `inline code`
+* Local and remote images
+* [Links](https://fiskurgit.github.io)
 
-* AAA
-* BBB
-* CCC
+## Still to do
 
-[My homepage](https://fiskurgit.github.io)
+* Lists
+* Code Blocks
 
 Remote image:
 ![Remote Image](https://fiskurgit.github.io/blog/series1/sample1.png)
@@ -16,9 +20,7 @@ Remote image:
 Local image:
 ![Local image](hexagram_res)
 
+```
+A faulty code block
 
-_emphasis_
-
-**bold**
-
-`code (monospaced)`
+```
