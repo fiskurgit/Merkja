@@ -96,22 +96,25 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val range: Int = RANGE_DEFAULT
     )
 
-    private val h1Pattern = Pattern.compile("^#\\s.*\\n")
+
+    private val LINE_START = "(?:\\A|\\R)"
+
+    private val h1Pattern = Pattern.compile("$LINE_START#\\s(.*\\R)")
     private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, black,null, Typeface.BOLD, 2.0f)
 
-    private val h2Pattern = Pattern.compile("^##\\s.*\\n")
+    private val h2Pattern = Pattern.compile("$LINE_START##\\s(.*\\R)")
     private val h2Scheme = MDScheme(SCHEME_H2, h2Pattern, black, null, Typeface.BOLD, 1.8f)
 
-    private val h3Pattern = Pattern.compile("^###\\s.*\\n")
+    private val h3Pattern = Pattern.compile("$LINE_START###\\s(.*\\R)")
     private val h3Scheme = MDScheme(SCHEME_H3, h3Pattern, black, null, Typeface.BOLD, 1.6f)
 
-    private val h4Pattern = Pattern.compile("^####\\s.*\\n")
+    private val h4Pattern = Pattern.compile("$LINE_START####\\s(.*\\R)")
     private val h4Scheme = MDScheme(SCHEME_H4, h4Pattern, black, null, Typeface.BOLD, 1.4f)
 
-    private val h5Pattern = Pattern.compile("^#####\\s.*\\n")
+    private val h5Pattern = Pattern.compile("$LINE_START#####\\s(.*\\R)")
     private val h5Scheme = MDScheme(SCHEME_H5, h5Pattern, black, null, Typeface.BOLD, 1.2f)
 
-    private val h6Pattern = Pattern.compile("^######\\s.*\\n")
+    private val h6Pattern = Pattern.compile("$LINE_START######\\s(.*\\R)")
     private val h6Scheme = MDScheme(SCHEME_H6, h6Pattern, black, null, Typeface.BOLD, 1.0f)
 
     private val boldPattern = Pattern.compile("\\*\\*.*\\*\\*")
@@ -177,9 +180,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                 when {
                     scheme.textStyle != null -> span.setSpan(StyleSpan(scheme.textStyle), start, end, DEFAULT_MODE)
                 }
-                when {
-                    scheme.scale != null -> span.setSpan(RelativeSizeSpan(scheme.scale), start, end, DEFAULT_MODE)
-                }
+
 
                 when (scheme.id){
                     SCHEME_LINK -> {
@@ -209,29 +210,14 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                             externalHandler(matchEvent)
                         }
                     }
-                    SCHEME_H6 -> {
-                        span.delete(start, start + 7)
-                        removed += 7
-                    }
-                    SCHEME_H5 -> {
-                        span.delete(start, start + 6)
-                        removed += 6
-                    }
-                    SCHEME_H4 -> {
-                        span.delete(start, start + 5)
-                        removed += 5
-                    }
-                    SCHEME_H3 -> {
-                        span.delete(start, start + 4)
-                        removed += 4
-                    }
-                    SCHEME_H2 -> {
-                        span.delete(start, start + 3)
-                        removed += 3
-                    }
-                    SCHEME_H1 -> {
-                        span.delete(start, start + 2)
-                        removed += 2
+                    SCHEME_H6, SCHEME_H5, SCHEME_H4, SCHEME_H3, SCHEME_H2, SCHEME_H1 -> {
+                        val value =  "\n" + matcher.group(1)
+                        span.delete(start, end)
+                        removed += (end - start) - value.length
+                        span.insert(start, value)
+                        span.setSpan(ForegroundColorSpan(Color.BLACK), start, start + value.length, DEFAULT_MODE)
+                        span.setSpan(StyleSpan(Typeface.BOLD), start, start + value.length, DEFAULT_MODE)
+                        span.setSpan(RelativeSizeSpan(scheme.scale ?: 1f), start, start + value.length, DEFAULT_MODE)
                     }
                     SCHEME_BOLD -> {
                         span.delete(end-2, end)
