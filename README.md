@@ -32,7 +32,7 @@ simpleMDRenderer.render()
 
 ## Supported
 
-* # Big headers down to ###### small headers
+* Big headers down to small headers
 * **Bold**
 * _italics_
 * `inline code`
