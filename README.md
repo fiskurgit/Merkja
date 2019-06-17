@@ -30,6 +30,7 @@ simpleMDRenderer.render()
 ...
 
 fun loadImage(matchEvent: MatchEvent){
+    val imageUrl = matchEvent.value
     //fetch image async then:
     runOnUiThread {
         simpleMDRenderer.insertImage(bitmap, matchEvent)
