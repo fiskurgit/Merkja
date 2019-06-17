@@ -7,7 +7,8 @@
 * _Emphasis_
 * `inline code`
 * Local and remote images
-* [Links](https://fiskurgit.github.io)
+* [Web Links](https://fiskurgit.github.io)
+* [Local links](linked_page.md)
 
 ## Still to do
 

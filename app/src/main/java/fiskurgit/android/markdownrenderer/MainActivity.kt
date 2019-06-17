@@ -10,6 +10,8 @@ import okhttp3.*
 import java.io.IOException
 
 import android.util.Log
+import android.content.Intent
+import android.net.Uri
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,11 +40,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleLink(matchEvent: SimpleMDRenderer.MatchEvent){
-        Log.d("MDL:::", "handleLink: ${matchEvent.value}")
+        val clickedLink = matchEvent.value
+
+        if(clickedLink.startsWith("https://")){
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(clickedLink)
+            startActivity(intent)
+        }else{
+            val assetInputStream = assets.open(clickedLink)
+            val assetAsString = assetInputStream.bufferedReader().use { it.readText() }
+            markdown_text_view.text = assetAsString
+            simpleMDRenderer.render()
+        }
     }
 
     private fun loadImage(matchEvent: SimpleMDRenderer.MatchEvent){
-        Log.d("MDL:::", "loadImage: ${matchEvent.value}")
         val request = Request.Builder()
             .url(matchEvent.value)
             .build()
