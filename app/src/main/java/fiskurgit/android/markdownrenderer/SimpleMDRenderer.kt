@@ -211,7 +211,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         }
                     }
                     SCHEME_H6, SCHEME_H5, SCHEME_H4, SCHEME_H3, SCHEME_H2, SCHEME_H1 -> {
-                        val value =  "\n" + matcher.group(1)
+                        val value =  matcher.group(1)
                         span.delete(start, end)
                         removed += (end - start) - value.length
                         span.insert(start, value)

@@ -10,9 +10,6 @@ import okhttp3.*
 import java.io.IOException
 
 import android.util.Log
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ImageSpan
 
 class MainActivity : AppCompatActivity() {
 
