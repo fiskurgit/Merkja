@@ -40,12 +40,13 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         private const val SCHEME_CODE_INLINE = 7
         private const val SCHEME_EMPHASES = 8
         private const val SCHEME_BOLD = 9
+        private const val SCHEME_ORDERED_LIST = 12
+        private const val SCHEME_UNORDERED_LIST = 13
+        private const val SCHEME_QUOTE = 14
+        private const val SCHEME_CODE_BLOCK = 15
+
         const val SCHEME_IMAGE = 10
         const val SCHEME_LINK = 11
-        const val SCHEME_ORDERED_LIST = 12
-        const val SCHEME_UNORDERED_LIST = 13
-        const val SCHEME_QUOTE = 14
-        const val SCHEME_CODE_BLOCK = 15
 
         private const val LINE_START = "(?:\\A|\\R)"
 
@@ -81,52 +82,21 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val scale: Float? = null
     )
 
-    private val h1Pattern = Pattern.compile("$LINE_START#\\s(.*\\R)")
-    private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, 2.0f)
-
-    private val h2Pattern = Pattern.compile("$LINE_START##\\s(.*\\R)")
-    private val h2Scheme = MDScheme(SCHEME_H2, h2Pattern, 1.8f)
-
-    private val h3Pattern = Pattern.compile("$LINE_START###\\s(.*\\R)")
-    private val h3Scheme = MDScheme(SCHEME_H3, h3Pattern, 1.6f)
-
-    private val h4Pattern = Pattern.compile("$LINE_START####\\s(.*\\R)")
-    private val h4Scheme = MDScheme(SCHEME_H4, h4Pattern, 1.4f)
-
-    private val h5Pattern = Pattern.compile("$LINE_START#####\\s(.*\\R)")
-    private val h5Scheme = MDScheme(SCHEME_H5, h5Pattern, 1.2f)
-
-    private val h6Pattern = Pattern.compile("$LINE_START######\\s(.*\\R)")
-    private val h6Scheme = MDScheme(SCHEME_H6, h6Pattern, 1.0f)
-
-    private val boldPattern = Pattern.compile("\\*\\*.*\\*\\*")
-    private val boldScheme = MDScheme(SCHEME_BOLD, boldPattern)
-
-    private val emphasisPattern = Pattern.compile("_.*_")
-    private val emphasesScheme = MDScheme(SCHEME_EMPHASES, emphasisPattern)
-
-    private val inlineCodePattern = Pattern.compile("`.*`")
-    private val inlineCodeScheme = MDScheme(SCHEME_CODE_INLINE, inlineCodePattern)
-
-    private val imagePattern = Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))")
-    private val imageScheme = MDScheme(SCHEME_IMAGE, imagePattern)
-
-    private val linkPattern = Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")
-    private val linkScheme = MDScheme(SCHEME_LINK, linkPattern)
-
-    private val orderedListPattern = Pattern.compile("([0-9]+.)(.*)\\n")
-    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern)
-
-    private val unorderedListPattern = Pattern.compile("\\*.*\\n")
-    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, unorderedListPattern)
-
-    private val quotePattern = Pattern.compile("$LINE_START>.*\\n")
-    private val quoteScheme = MDScheme(SCHEME_QUOTE, quotePattern)
-
-    private val codeBlockPattern = Pattern.compile("(?:```)\\n*\\X+(?:```)")
-    private val codeBlockScheme = MDScheme(SCHEME_CODE_BLOCK, codeBlockPattern)
-
-
+    private val h1Scheme = MDScheme(SCHEME_H1, Pattern.compile("$LINE_START#\\s(.*\\R)"), 2.0f)
+    private val h2Scheme = MDScheme(SCHEME_H2, Pattern.compile("$LINE_START##\\s(.*\\R)"), 1.8f)
+    private val h3Scheme = MDScheme(SCHEME_H3, Pattern.compile("$LINE_START###\\s(.*\\R)"), 1.6f)
+    private val h4Scheme = MDScheme(SCHEME_H4, Pattern.compile("$LINE_START####\\s(.*\\R)"), 1.4f)
+    private val h5Scheme = MDScheme(SCHEME_H5, Pattern.compile("$LINE_START#####\\s(.*\\R)"), 1.2f)
+    private val h6Scheme = MDScheme(SCHEME_H6, Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f)
+    private val boldScheme = MDScheme(SCHEME_BOLD, Pattern.compile("\\*\\*.*\\*\\*"))
+    private val emphasesScheme = MDScheme(SCHEME_EMPHASES, Pattern.compile("_.*_"))
+    private val inlineCodeScheme = MDScheme(SCHEME_CODE_INLINE, Pattern.compile("`.*`"))
+    private val imageScheme = MDScheme(SCHEME_IMAGE, Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))"))
+    private val linkScheme = MDScheme(SCHEME_LINK, Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))"))
+    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, Pattern.compile("([0-9]+.)(.*)\\n"))
+    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, Pattern.compile("\\*.*\\n"))
+    private val quoteScheme = MDScheme(SCHEME_QUOTE, Pattern.compile("$LINE_START>.*\\n"))
+    private val codeBlockScheme = MDScheme(SCHEME_CODE_BLOCK, Pattern.compile("(?:```)\\n*\\X+(?:```)"))
 
     private val schemes = mutableListOf<MDScheme>()
 
@@ -230,7 +200,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         }else {
                             //Async images could arrive back in any order (or not at all), so inject placeholder text
                             placeholderCounter++
-                            val placeholder = "XX${System.currentTimeMillis()}_$placeholderCounter"
+                            val placeholder = "${System.currentTimeMillis()}_$placeholderCounter"
 
                             val imageUri = matcher.group(1)
                             val matchEvent = MatchEvent(SCHEME_IMAGE, placeholder, imageUri)
@@ -289,8 +259,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     fun insertImage(bitmap: Bitmap?, matchEvent: MatchEvent) {
         if(bitmap == null) return
 
-        l("inserting image: ${matchEvent.value}")
-
         val start = span.indexOf(matchEvent.matchText, 0, false)
 
         if(start != -1) {
@@ -301,7 +269,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
             val placeholder = matchEvent.matchText
             l("Could not find placeholder $placeholder")
         }
-
     }
 
     private fun findResource(imageRef: String): Int? {
@@ -332,6 +299,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         init {
             paint.color = color
         }
+        
         override fun drawBackground(c: Canvas?, p: Paint?, left: Int, right: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, lnum: Int) {
             c?.drawRect(RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat()), paint)
         }
