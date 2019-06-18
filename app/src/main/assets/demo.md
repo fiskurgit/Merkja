@@ -25,3 +25,5 @@ Local image:
 A faulty code block
 
 ```
+
+![Remote Image](https://fiskurgit.github.io/blog/series1/sample2.png)

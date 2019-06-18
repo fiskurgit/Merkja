@@ -191,16 +191,21 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                             if (drawable != null){
                                 span.setSpan(CustomImageSpan(drawable), start, start+1, DEFAULT_MODE)
                                 span.delete(start+1, end)
+
+                                removed += (end - start) - 1
                             }
                         }else {
                             //Async images could arrive back in any order (or not at all), so inject placeholder text
                             placeholderCounter++
-                            val placeholder = ":::${System.currentTimeMillis()}_$placeholderCounter}"
+                            val placeholder = "XX${System.currentTimeMillis()}_$placeholderCounter"
 
-                            val matchEvent = MatchEvent(SCHEME_IMAGE, placeholder, matcher.group(1), start, start + placeholder.length)
+                            val imageUri = matcher.group(1)
+                            val matchEvent = MatchEvent(SCHEME_IMAGE, placeholder, imageUri)
 
                             span.delete(start, end)
                             span.insert(start, placeholder)
+
+                            removed +=  (end - start) - placeholder.length
 
                             externalHandler(matchEvent)
                         }
@@ -243,11 +248,19 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     fun insertImage(bitmap: Bitmap?, matchEvent: MatchEvent) {
         if(bitmap == null) return
 
-        val start = textView.text.indexOf(matchEvent.matchText, 0, false)
+        l("inserting image: ${matchEvent.value}")
 
-        span.setSpan(ImageSpan(textView.context, resizeImage(bitmap)), start, start+1, DEFAULT_MODE)
-        span.delete(matchEvent.start+1, matchEvent.end)
-        textView.text = span
+        val start = span.indexOf(matchEvent.matchText, 0, false)
+
+        if(start != -1) {
+            span.setSpan(ImageSpan(textView.context, resizeImage(bitmap)), start, start + 1, DEFAULT_MODE)
+            span.delete(start + 1, start + matchEvent.matchText.length)
+            textView.text = span
+        }else {
+            val placeholder = matchEvent.matchText
+            l("Could not find placeholder $placeholder")
+        }
+
     }
 
     private fun findResource(imageRef: String): Int? {
