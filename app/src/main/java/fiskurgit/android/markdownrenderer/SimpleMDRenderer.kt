@@ -37,6 +37,8 @@ import androidx.annotation.ColorInt
 
     Links also need to be handled by an external handler
 
+    I should probably have read this before starting work: https://developer.android.com/reference/java/util/regex/Pattern
+
  */
 class SimpleMDRenderer(private val textView: TextView, var externalHandler: (matchEvent: MatchEvent) -> Unit = { _ -> }) {
 
