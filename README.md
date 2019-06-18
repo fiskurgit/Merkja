@@ -52,13 +52,14 @@ fun loadImage(matchEvent: MatchEvent){
 * Local images
 * Async remote images
 * Local and remote links (websites and local markdown files)
+* Ordered and unordered lists
 
 ## Coming Soon or Work in Progress
 
 * ```code blocks ```
-* Lists
 * Custom links
 * Horizontal rule
+* Quotes
 
 ## Not Supported
 
@@ -67,5 +68,7 @@ fun loadImage(matchEvent: MatchEvent){
 
 
 ### Dev Notes
+
+* Ordered and Unordered lists both need to check for line-start. Currently will trigger in text body...
 
 

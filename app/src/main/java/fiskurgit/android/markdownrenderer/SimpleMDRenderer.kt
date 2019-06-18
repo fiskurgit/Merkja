@@ -12,6 +12,9 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import android.graphics.RectF
+import androidx.annotation.ColorInt
+
 
 /*
 
@@ -53,6 +56,8 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         const val SCHEME_IMAGE = 10
         const val SCHEME_LINK = 11
         const val SCHEME_ORDERED_LIST = 12
+        const val SCHEME_UNORDERED_LIST = 13
+        const val SCHEME_QUOTE = 14
 
         fun resizeImage(bitmap: Bitmap): Bitmap {
             val width = bitmap.width
@@ -126,8 +131,14 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private val linkPattern = Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")
     private val linkScheme = MDScheme(SCHEME_LINK, linkPattern, link)
 
-    private val orderedListPattern = Pattern.compile("[0-9]+.(.*)\\n")
+    private val orderedListPattern = Pattern.compile("([0-9]+.)(.*)\\n")
     private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern, black)
+
+    private val unorderedListPattern = Pattern.compile("\\*.*\\n")
+    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, unorderedListPattern, black)
+
+    private val quotePattern = Pattern.compile(">.*\\n")
+    private val quoteScheme = MDScheme(SCHEME_QUOTE, quotePattern, black)
 
 
 
@@ -146,6 +157,9 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         schemes.add(boldScheme)
         schemes.add(emphasesScheme)
         schemes.add(inlineCodeScheme)
+        schemes.add(orderedListScheme)
+        schemes.add(unorderedListScheme)
+        schemes.add(quoteScheme)
         schemes.add(imageScheme)//must be last as may be async and start/end indexes will change while downloading images
         textView.movementMethod = LinkMovementMethod.getInstance()
     }
@@ -174,8 +188,32 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                     scheme.textStyle != null -> span.setSpan(StyleSpan(scheme.textStyle), start, end, DEFAULT_MODE)
                 }
 
-
                 when (scheme.id){
+                    SCHEME_QUOTE -> {
+                        span.replace(start, start + 1, " ")
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            //todo - line height needs to be increased too if possible:
+                            span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
+                        }
+                    }
+                    SCHEME_ORDERED_LIST -> {
+                        val number = matcher.group(1)
+                        span.setSpan(StyleSpan(Typeface.BOLD), start, start + number.length, DEFAULT_MODE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
+                        }
+                    }
+                    SCHEME_UNORDERED_LIST -> {
+                        //There is BulletSpan but this is less problematic, and the more useful BulletSpan is AndroidP onwards anyway
+                        span.replace(start, start + 1, "•")
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
+                        }
+
+                        span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
+
+
+                    }
                     SCHEME_LINK -> {
                         val linkText = matcher.group(1)
 
@@ -251,6 +289,10 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         textView.text =  span
     }
 
+    private fun dpToPx(dp: Int): Int{
+        return (dp * Resources.getSystem().displayMetrics.density).toInt()
+    }
+
     fun insertImage(bitmap: Bitmap?, matchEvent: MatchEvent) {
         if(bitmap == null) return
 
@@ -287,6 +329,18 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private class CustomClickableSpan(var externalHandler: (matchEvent: MatchEvent) -> Unit, val matchEvent: MatchEvent): ClickableSpan(){
         override fun onClick(widget: View) {
             externalHandler(matchEvent)
+        }
+    }
+
+    private class FullWidthBackgroundSpan(@ColorInt color: Int): LineBackgroundSpan{
+
+        val paint = Paint()
+
+        init {
+            paint.color = color
+        }
+        override fun drawBackground(c: Canvas?, p: Paint?, left: Int, right: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, lnum: Int) {
+            c?.drawRect(RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat()), paint)
         }
     }
 

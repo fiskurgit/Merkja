@@ -28,3 +28,8 @@ A faulty code block
 ```
 
 ![Remote Image](https://fiskurgit.github.io/blog/series1/sample2.png)
+
+
+> If I never did another film after 'Paris, Texas,' I'd be happy.
+
+
