@@ -21,11 +21,7 @@ import android.widget.TextView
 
     Supported syntax:
 
-    # Big headers down to
-    ###### small headers
-    **Bold**
-    _italics_
-    `inline code`
+
     ![An image](imageUrl or resource name)
 
     Image resources from the .apk will load automatically, for remote images, or Uris you'll need to fetch them yourself.
@@ -41,12 +37,7 @@ import android.widget.TextView
  */
 class SimpleMDRenderer(private val textView: TextView, var externalHandler: (matchEvent: MatchEvent) -> Unit = { _ -> }) {
 
-    private var start = 0
-    private var end = 0
-
     companion object {
-        private const val RANGE_DEFAULT = 0
-        private const val RANGE_INNER = 1
 
         private const val DEFAULT_MODE = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 
@@ -74,6 +65,9 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         }
     }
 
+    private var start = 0
+    private var end = 0
+
     private var black = Color.parseColor("#000000")
     private var codeBackground = Color.parseColor("#DEDEDE")
     private var link = Color.parseColor("#ff00cc")
@@ -92,8 +86,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val foreground: Int? = null,
         val background: Int? = null,
         val textStyle: Int? = Typeface.NORMAL,
-        val scale: Float? = null,
-        val range: Int = RANGE_DEFAULT
+        val scale: Float? = null
     )
 
 
@@ -134,6 +127,8 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
 
     private val schemes = mutableListOf<MDScheme>()
 
+    private var placeholderCounter = 0
+
     init {
         schemes.add(h6Scheme)
         schemes.add(h5Scheme)
@@ -160,16 +155,8 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
             val matcher = scheme.pattern.matcher(span)
             var removed = 0
             while (matcher.find()) {
-                when (RANGE_INNER) {
-                    scheme.range -> {
-                        start = matcher.start() + 1
-                        end = matcher.end() - 1
-                    }
-                    else -> {
-                        start = matcher.start() - removed
-                        end = matcher.end() - removed
-                    }
-                }
+                start = matcher.start() - removed
+                end = matcher.end() - removed
 
                 when {
                     scheme.foreground != null -> span.setSpan(ForegroundColorSpan(scheme.foreground), start, end, DEFAULT_MODE)
@@ -206,7 +193,15 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                                 span.delete(start+1, end)
                             }
                         }else {
-                            val matchEvent = MatchEvent(SCHEME_IMAGE, matcher.group(), matcher.group(1), start, end)
+                            //Async images could arrive back in any order (or not at all), so inject placeholder text
+                            placeholderCounter++
+                            val placeholder = ":::${System.currentTimeMillis()}_$placeholderCounter}"
+
+                            val matchEvent = MatchEvent(SCHEME_IMAGE, placeholder, matcher.group(1), start, start + placeholder.length)
+
+                            span.delete(start, end)
+                            span.insert(start, placeholder)
+
                             externalHandler(matchEvent)
                         }
                     }
@@ -248,7 +243,9 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     fun insertImage(bitmap: Bitmap?, matchEvent: MatchEvent) {
         if(bitmap == null) return
 
-        span.setSpan(ImageSpan(textView.context, resizeImage(bitmap)), matchEvent.start, matchEvent.start+1, DEFAULT_MODE)
+        val start = textView.text.indexOf(matchEvent.matchText, 0, false)
+
+        span.setSpan(ImageSpan(textView.context, resizeImage(bitmap)), start, start+1, DEFAULT_MODE)
         span.delete(matchEvent.start+1, matchEvent.end)
         textView.text = span
     }

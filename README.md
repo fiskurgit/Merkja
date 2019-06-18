@@ -1,5 +1,7 @@
 # Merkja for Android
 
+## Work in progress - do not use
+
 A very simple single class Markdown renderer for when you only need the basic syntax and don't want to add a 3rd-party dependency. Warning: Contains hacky regex and span mangling, I have no idea how unoptimised it is.
 
 It's not meant to be a replacement for a full-featured library, if you need full Markdown support use [Markwon](https://github.com/noties/Markwon)
@@ -62,3 +64,8 @@ fun loadImage(matchEvent: MatchEvent){
 
 * Variants for the supported tags above
 * Probably something you want to use (use [Markwon](https://github.com/noties/Markwon) instead)
+
+
+### Dev Notes
+
+* For remote images inject a timestamp + counter placeholder, images could arrive in any order so start/end indexes will change.
