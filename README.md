@@ -4,7 +4,9 @@ A very simple single class Markdown renderer for when you only need the basic sy
 
 It's not meant to be a replacement for a full-featured library, if you need full Markdown support use [Markwon](https://github.com/noties/Markwon)
 
-This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/SimpleMDRenderer.kt) class to your project, usage:
+This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/SimpleMDRenderer.kt) class to your project.
+
+![Screenshot](markdown_screenshot.png)
 
 ## Simple
 
@@ -63,5 +65,3 @@ fun loadImage(matchEvent: MatchEvent){
 
 * Variants for the supported tags above
 * Probably something you want to use (use [Markwon](https://github.com/noties/Markwon) instead)
-
-
