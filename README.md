@@ -54,7 +54,7 @@ fun loadImage(matchEvent: MatchEvent){
 * ```code blocks ```
 * Quotes
 
-## Coming Soon or Work in Progress
+## Coming Soon
 
 * Custom links
 * Horizontal rule
