@@ -58,6 +58,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         const val SCHEME_ORDERED_LIST = 12
         const val SCHEME_UNORDERED_LIST = 13
         const val SCHEME_QUOTE = 14
+        const val SCHEME_CODE_BLOCK = 15
 
         fun resizeImage(bitmap: Bitmap): Bitmap {
             val width = bitmap.width
@@ -89,7 +90,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     data class MDScheme(
         val id: Int,
         val pattern: Pattern,
-        val foreground: Int? = null,
+        val foreground: Int? = Color.BLACK,
         val background: Int? = null,
         val textStyle: Int? = Typeface.NORMAL,
         val scale: Float? = null
@@ -132,13 +133,16 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private val linkScheme = MDScheme(SCHEME_LINK, linkPattern, link)
 
     private val orderedListPattern = Pattern.compile("([0-9]+.)(.*)\\n")
-    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern, black)
+    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern)
 
     private val unorderedListPattern = Pattern.compile("\\*.*\\n")
-    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, unorderedListPattern, black)
+    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, unorderedListPattern)
 
     private val quotePattern = Pattern.compile(">.*\\n")
-    private val quoteScheme = MDScheme(SCHEME_QUOTE, quotePattern, black)
+    private val quoteScheme = MDScheme(SCHEME_QUOTE, quotePattern)
+
+    private val codeBlockPattern = Pattern.compile("(?:```)\\n*\\X+(?:```)")
+    private val codeBlockScheme = MDScheme(SCHEME_CODE_BLOCK, codeBlockPattern)
 
 
 
@@ -156,11 +160,12 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         schemes.add(linkScheme)
         schemes.add(boldScheme)
         schemes.add(emphasesScheme)
-        schemes.add(inlineCodeScheme)
         schemes.add(orderedListScheme)
         schemes.add(unorderedListScheme)
+        schemes.add(codeBlockScheme)
+        schemes.add(inlineCodeScheme)
         schemes.add(quoteScheme)
-        schemes.add(imageScheme)//must be last as may be async and start/end indexes will change while downloading images
+        schemes.add(imageScheme)
         textView.movementMethod = LinkMovementMethod.getInstance()
     }
 
@@ -189,6 +194,17 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                 }
 
                 when (scheme.id){
+                    SCHEME_CODE_BLOCK -> {
+                        span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
+                        }
+
+                        span.delete(start, start+3)
+                        span.delete(end-4, end-1)
+
+                        removed += 6
+                    }
                     SCHEME_QUOTE -> {
                         span.replace(start, start + 1, " ")
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -209,10 +225,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                             span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                         }
-
-                        span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
-
-
                     }
                     SCHEME_LINK -> {
                         val linkText = matcher.group(1)

@@ -10,23 +10,25 @@
 * [Web Links](https://fiskurgit.github.io)
 * [Local links](linked_page.md)
 
-## Still to do
 
-1. Unordered Lists
-2. Ordered Lists
-3. Code Blocks
-
-Remote image:
+#### Remote image:
 ![Remote Image](https://fiskurgit.github.io/blog/series1/sample1.png)
 
-Local image:
+#### Local image:
 ![Local image](hexagram_res)
 
 ```
-A faulty code block
+SCHEME_BOLD -> {
+    span.delete(end-2, end)
+    span.delete(start, start+2)
+    removed += 4
+}
 
 ```
 
+
+
+#### Another remote image:
 ![Remote Image](https://fiskurgit.github.io/blog/series1/sample2.png)
 
 
