@@ -6,7 +6,8 @@ It's not meant to be a replacement for a full-featured library, if you need full
 
 This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/SimpleMDRenderer.kt) class to your project.
 
-![Screenshot](markdown_screenshot.png)
+
+<img src="markdown_screenshot.png" width="300">
 
 ## Simple
 
