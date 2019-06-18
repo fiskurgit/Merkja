@@ -62,6 +62,8 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         const val SCHEME_QUOTE = 14
         const val SCHEME_CODE_BLOCK = 15
 
+        private const val LINE_START = "(?:\\A|\\R)"
+
         fun resizeImage(bitmap: Bitmap): Bitmap {
             val width = bitmap.width
             val height = bitmap.height
@@ -77,9 +79,8 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private var start = 0
     private var end = 0
 
-    private var black = Color.parseColor("#000000")
     private var codeBackground = Color.parseColor("#DEDEDE")
-    private var link = Color.parseColor("#ff00cc")
+    private var linkColor = Color.parseColor("#cc0000")
 
     data class MatchEvent(
         val schemeType: Int,
@@ -92,47 +93,44 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     data class MDScheme(
         val id: Int,
         val pattern: Pattern,
-        val foreground: Int? = Color.BLACK,
-        val background: Int? = null,
-        val textStyle: Int? = Typeface.NORMAL,
         val scale: Float? = null
     )
 
 
-    private val LINE_START = "(?:\\A|\\R)"
+
 
     private val h1Pattern = Pattern.compile("$LINE_START#\\s(.*\\R)")
-    private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, black,null, Typeface.BOLD, 2.0f)
+    private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, 2.0f)
 
     private val h2Pattern = Pattern.compile("$LINE_START##\\s(.*\\R)")
-    private val h2Scheme = MDScheme(SCHEME_H2, h2Pattern, black, null, Typeface.BOLD, 1.8f)
+    private val h2Scheme = MDScheme(SCHEME_H2, h2Pattern, 1.8f)
 
     private val h3Pattern = Pattern.compile("$LINE_START###\\s(.*\\R)")
-    private val h3Scheme = MDScheme(SCHEME_H3, h3Pattern, black, null, Typeface.BOLD, 1.6f)
+    private val h3Scheme = MDScheme(SCHEME_H3, h3Pattern, 1.6f)
 
     private val h4Pattern = Pattern.compile("$LINE_START####\\s(.*\\R)")
-    private val h4Scheme = MDScheme(SCHEME_H4, h4Pattern, black, null, Typeface.BOLD, 1.4f)
+    private val h4Scheme = MDScheme(SCHEME_H4, h4Pattern, 1.4f)
 
     private val h5Pattern = Pattern.compile("$LINE_START#####\\s(.*\\R)")
-    private val h5Scheme = MDScheme(SCHEME_H5, h5Pattern, black, null, Typeface.BOLD, 1.2f)
+    private val h5Scheme = MDScheme(SCHEME_H5, h5Pattern, 1.2f)
 
     private val h6Pattern = Pattern.compile("$LINE_START######\\s(.*\\R)")
-    private val h6Scheme = MDScheme(SCHEME_H6, h6Pattern, black, null, Typeface.BOLD, 1.0f)
+    private val h6Scheme = MDScheme(SCHEME_H6, h6Pattern, 1.0f)
 
     private val boldPattern = Pattern.compile("\\*\\*.*\\*\\*")
-    private val boldScheme = MDScheme(SCHEME_BOLD, boldPattern, black, null, Typeface.BOLD)
+    private val boldScheme = MDScheme(SCHEME_BOLD, boldPattern)
 
     private val emphasisPattern = Pattern.compile("_.*_")
-    private val emphasesScheme = MDScheme(SCHEME_EMPHASES, emphasisPattern, black, null, Typeface.ITALIC)
+    private val emphasesScheme = MDScheme(SCHEME_EMPHASES, emphasisPattern)
 
     private val inlineCodePattern = Pattern.compile("`.*`")
-    private val inlineCodeScheme = MDScheme(SCHEME_CODE_INLINE, inlineCodePattern, black, codeBackground)
+    private val inlineCodeScheme = MDScheme(SCHEME_CODE_INLINE, inlineCodePattern)
 
     private val imagePattern = Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))")
     private val imageScheme = MDScheme(SCHEME_IMAGE, imagePattern)
 
     private val linkPattern = Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")
-    private val linkScheme = MDScheme(SCHEME_LINK, linkPattern, link)
+    private val linkScheme = MDScheme(SCHEME_LINK, linkPattern)
 
     private val orderedListPattern = Pattern.compile("([0-9]+.)(.*)\\n")
     private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern)
@@ -140,7 +138,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private val unorderedListPattern = Pattern.compile("\\*.*\\n")
     private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, unorderedListPattern)
 
-    private val quotePattern = Pattern.compile(">.*\\n")
+    private val quotePattern = Pattern.compile("$LINE_START>.*\\n")
     private val quoteScheme = MDScheme(SCHEME_QUOTE, quotePattern)
 
     private val codeBlockPattern = Pattern.compile("(?:```)\\n*\\X+(?:```)")
@@ -185,50 +183,45 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                 start = matcher.start() - removed
                 end = matcher.end() - removed
 
-                when {
-                    scheme.foreground != null -> span.setSpan(ForegroundColorSpan(scheme.foreground), start, end, DEFAULT_MODE)
-                }
-                when {
-                    scheme.background != null -> span.setSpan(BackgroundColorSpan(scheme.background), start, end, DEFAULT_MODE)
-                }
-                when {
-                    scheme.textStyle != null -> span.setSpan(StyleSpan(scheme.textStyle), start, end, DEFAULT_MODE)
-                }
-
                 when (scheme.id){
                     SCHEME_CODE_BLOCK -> {
                         span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
+
+                        when {
+                            isAndroidPPlus() -> span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
                         }
 
-                        span.delete(start, start+3)
-                        span.delete(end-4, end-1)
+                        span.delete(start, start + 3)
+                        span.delete(end - 4, end - 1)
 
                         removed += 6
                     }
                     SCHEME_QUOTE -> {
-                        span.replace(start, start + 1, " ")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            //todo - line height needs to be increased too if possible:
-                            span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
+                        span.replace(start+1, start + 2, " ")//replace > with space
+
+                        //todo - line height needs to be increased too if possible:
+                        when {
+                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
                         }
                     }
                     SCHEME_ORDERED_LIST -> {
                         val number = matcher.group(1)
                         span.setSpan(StyleSpan(Typeface.BOLD), start, start + number.length, DEFAULT_MODE)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
+                        when {
+                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                         }
                     }
                     SCHEME_UNORDERED_LIST -> {
                         //There is BulletSpan but this is less problematic, and the more useful BulletSpan is AndroidP onwards anyway
                         span.replace(start, start + 1, "•")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
+
+                        when {
+                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                         }
                     }
                     SCHEME_LINK -> {
+                        span.setSpan(ForegroundColorSpan(linkColor), start, end, DEFAULT_MODE)
+
                         val linkText = matcher.group(1)
 
                         span.delete(start+1, end)
@@ -278,19 +271,23 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         span.setSpan(RelativeSizeSpan(scheme.scale ?: 1f), start, start + value.length, DEFAULT_MODE)
                     }
                     SCHEME_BOLD -> {
+                        span.setSpan(StyleSpan(Typeface.BOLD), start, end, DEFAULT_MODE)
                         span.delete(end-2, end)
                         span.delete(start, start+2)
                         removed += 4
                     }
                     SCHEME_EMPHASES -> {
+                        span.setSpan(StyleSpan(Typeface.ITALIC), start, end, DEFAULT_MODE)
                         span.delete(end - 1, end)
                         span.delete(start, start + 1)
                         removed += 2
                     }
                     SCHEME_CODE_INLINE -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
+                        when {
+                            isAndroidPPlus() -> span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
                         }
+
+                        span.setSpan(BackgroundColorSpan(codeBackground), start, end, DEFAULT_MODE)
 
                         span.delete(end-1, end)
                         span.delete(start, start+1)
@@ -356,6 +353,10 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         override fun drawBackground(c: Canvas?, p: Paint?, left: Int, right: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, lnum: Int) {
             c?.drawRect(RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat()), paint)
         }
+    }
+
+    private fun isAndroidPPlus(): Boolean{
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
     }
 
     private fun l(message: String){

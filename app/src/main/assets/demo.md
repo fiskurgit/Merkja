@@ -1,7 +1,5 @@
 # Simple Markdown Renderer
 
-## Supported
-
 * Headers # to ######
 * **Bold**
 * _Emphasis_
@@ -9,6 +7,12 @@
 * Local and remote images
 * [Web Links](https://fiskurgit.github.io)
 * [Local links](linked_page.md)
+
+A _sentence_ with **mixed** styling and [links](https://fiskurgit.github.io) ...
+
+1. an
+2. ordered
+3. list
 
 
 #### Remote image:
