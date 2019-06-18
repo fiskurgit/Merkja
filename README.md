@@ -2,7 +2,7 @@
 
 ## Work in progress - do not use
 
-A very simple single class Markdown renderer for when you only need the basic syntax and don't want to add a 3rd-party dependency. Warning: Contains hacky regex and span mangling, I have no idea how unoptimised it is.
+A very simple single class Markdown renderer for when you only need the basic syntax and don't want to add a 3rd-party dependency. Warning: Contains hacky regex and span mangling, I have no idea how unoptimised it is. There is no error checking and if ou pass anything other than really simple markdown it _will_ break.
 
 It's not meant to be a replacement for a full-featured library, if you need full Markdown support use [Markwon](https://github.com/noties/Markwon)
 
@@ -53,22 +53,17 @@ fun loadImage(matchEvent: MatchEvent){
 * Async remote images
 * Local and remote links (websites and local markdown files)
 * Ordered and unordered lists
+* ```code blocks ```
+* Quotes
 
 ## Coming Soon or Work in Progress
 
-* ```code blocks ```
 * Custom links
 * Horizontal rule
-* Quotes
 
 ## Not Supported
 
 * Variants for the supported tags above
 * Probably something you want to use (use [Markwon](https://github.com/noties/Markwon) instead)
-
-
-### Dev Notes
-
-* Ordered and Unordered lists both need to check for line-start. Currently will trigger in text body...
 
 
