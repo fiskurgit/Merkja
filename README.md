@@ -47,12 +47,13 @@ fun loadImage(matchEvent: MatchEvent){
 * **Bold**
 * _italics_
 * `inline code`
-* Local and remote Images
+* Local images
 * Local and remote links (websites and local markdown files)
 
-## Coming Soon
+## Coming Soon or Work in Progress
 
 * ```code blocks ```
+* Async remote images
 * Lists
 * Custom links
 * Horizontal rule
