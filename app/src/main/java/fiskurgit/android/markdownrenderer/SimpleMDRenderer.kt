@@ -52,6 +52,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         private const val SCHEME_BOLD = 9
         const val SCHEME_IMAGE = 10
         const val SCHEME_LINK = 11
+        const val SCHEME_ORDERED_LIST = 12
 
         fun resizeImage(bitmap: Bitmap): Bitmap {
             val width = bitmap.width
@@ -124,6 +125,11 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
 
     private val linkPattern = Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")
     private val linkScheme = MDScheme(SCHEME_LINK, linkPattern, link)
+
+    private val orderedListPattern = Pattern.compile("[0-9]+.(.*)\\n")
+    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, orderedListPattern, black)
+
+
 
     private val schemes = mutableListOf<MDScheme>()
 

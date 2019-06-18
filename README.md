@@ -50,12 +50,12 @@ fun loadImage(matchEvent: MatchEvent){
 * _italics_
 * `inline code`
 * Local images
+* Async remote images
 * Local and remote links (websites and local markdown files)
 
 ## Coming Soon or Work in Progress
 
 * ```code blocks ```
-* Async remote images
 * Lists
 * Custom links
 * Horizontal rule
@@ -68,4 +68,4 @@ fun loadImage(matchEvent: MatchEvent){
 
 ### Dev Notes
 
-* For remote images inject a timestamp + counter placeholder, images could arrive in any order so start/end indexes will change.
+

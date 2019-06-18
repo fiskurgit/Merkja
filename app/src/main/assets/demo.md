@@ -12,8 +12,9 @@
 
 ## Still to do
 
-* Lists
-* Code Blocks
+1. Unordered Lists
+2. Ordered Lists
+3. Code Blocks
 
 Remote image:
 ![Remote Image](https://fiskurgit.github.io/blog/series1/sample1.png)
