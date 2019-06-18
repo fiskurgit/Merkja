@@ -22,21 +22,6 @@ import androidx.annotation.ColorInt
     It's very basic, but is a simple drop-in class to use in a project so you don't need an external library dependency.
     If you need more features and a full API use Markwon instead: https://github.com/noties/Markwon
 
-    Supported syntax:
-
-
-    ![An image](imageUrl or resource name)
-
-    Image resources from the .apk will load automatically, for remote images, or Uris you'll need to fetch them yourself.
-    examples:
-
-    ![An image](ic_app_icon)
-    ![An image](https://website.com/image.png)
-
-    For remote images supply an external handler, fetch asynchronously then call insertImage() with the bitmap.
-
-    Links also need to be handled by an external handler
-
     I should probably have read this before starting work: https://developer.android.com/reference/java/util/regex/Pattern
 
  */
