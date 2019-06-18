@@ -8,7 +8,7 @@
 * [Web Links](https://fiskurgit.github.io)
 * [Local links](linked_page.md)
 
-A _sentence_ with **mixed** styling and [links](https://fiskurgit.github.io) ...
+A _sentence with_ **mixed** `styling` and [links](https://fiskurgit.github.io) ...
 
 1. an
 2. ordered

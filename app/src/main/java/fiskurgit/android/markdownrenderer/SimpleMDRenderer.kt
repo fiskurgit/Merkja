@@ -96,9 +96,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val scale: Float? = null
     )
 
-
-
-
     private val h1Pattern = Pattern.compile("$LINE_START#\\s(.*\\R)")
     private val h1Scheme = MDScheme(SCHEME_H1, h1Pattern, 2.0f)
 
