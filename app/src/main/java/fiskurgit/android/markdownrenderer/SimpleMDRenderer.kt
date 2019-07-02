@@ -66,23 +66,12 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private var codeBackground = Color.parseColor("#DEDEDE")
     private var linkColor = Color.parseColor("#cc0000")
 
-    data class MatchEvent(
-        val schemeType: Int,
-        val matchText: String,
-        val value: String,
-        val start: Int = -1,
-        val end: Int = -1
-    )
-
-    data class MDScheme(
-        val id: Int,
-        val pattern: Pattern,
-        val scale: Float? = null
-    )
-
     private var placeholderCounter = 0
     private lateinit var span: SpannableStringBuilder
 
+    data class MatchEvent(val schemeType: Int, val matchText: String, val value: String, val start: Int = -1, val end: Int = -1)
+    data class MDScheme(val id: Int, val pattern: Pattern, val scale: Float? = null)
+    
     private val schemes = mutableListOf<MDScheme>()
 
     init {
