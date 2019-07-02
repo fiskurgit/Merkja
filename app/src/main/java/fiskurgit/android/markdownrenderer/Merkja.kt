@@ -14,15 +14,7 @@ import android.widget.TextView
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 
-/*
-
-    This is a single file Markdown renderer.
-    It's very basic, but is a simple drop-in class to use in a project so you don't need an external library dependency.
-    If you need more features and a full API use Markwon instead: https://github.com/noties/Markwon
-
-    I should probably have read this before starting work: https://developer.android.com/reference/java/util/regex/Pattern
-
- */
+// See https://github.com/fiskurgit/Merkja for more info
 class Merkja(private val textView: TextView, var externalHandler: (matchEvent: MatchEvent) -> Unit = { _ -> }) {
 
     companion object {
