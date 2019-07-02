@@ -16,7 +16,7 @@ import android.net.Uri
 class MainActivity : AppCompatActivity() {
 
     private val client = OkHttpClient()
-    private lateinit var simpleMDRenderer: SimpleMDRenderer
+    private lateinit var merkja: Merkja
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,18 +28,18 @@ class MainActivity : AppCompatActivity() {
 
         markdown_text_view.text = assetAsString
 
-        simpleMDRenderer = SimpleMDRenderer(markdown_text_view) { matchEvent ->
+        merkja = Merkja(markdown_text_view) { matchEvent ->
 
             when (matchEvent.schemeType){
-                SimpleMDRenderer.SCHEME_IMAGE -> loadImage(matchEvent)
-                SimpleMDRenderer.SCHEME_LINK -> handleLink(matchEvent)
+                Merkja.SCHEME_IMAGE -> loadImage(matchEvent)
+                Merkja.SCHEME_LINK -> handleLink(matchEvent)
             }
 
         }
-        simpleMDRenderer.render()
+        merkja.render()
     }
 
-    private fun handleLink(matchEvent: SimpleMDRenderer.MatchEvent){
+    private fun handleLink(matchEvent: Merkja.MatchEvent){
         val clickedLink = matchEvent.value
 
         if(clickedLink.startsWith("https://")){
@@ -50,11 +50,11 @@ class MainActivity : AppCompatActivity() {
             val assetInputStream = assets.open(clickedLink)
             val assetAsString = assetInputStream.bufferedReader().use { it.readText() }
             markdown_text_view.text = assetAsString
-            simpleMDRenderer.render()
+            merkja.render()
         }
     }
 
-    private fun loadImage(matchEvent: SimpleMDRenderer.MatchEvent){
+    private fun loadImage(matchEvent: Merkja.MatchEvent){
         val request = Request.Builder()
             .url(matchEvent.value)
             .build()
@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 val inputStream = response.body()?.byteStream()
                 val bitmap = BitmapFactory.decodeStream(inputStream)
                 runOnUiThread {
-                    simpleMDRenderer.insertImage(bitmap, matchEvent)
+                    merkja.insertImage(bitmap, matchEvent)
                 }
             }
 

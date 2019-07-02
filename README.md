@@ -4,7 +4,7 @@ A very simple single class Markdown renderer for when you only need the basic sy
 
 It's not meant to be a replacement for a full-featured library, if you need full Markdown support use [Markwon](https://github.com/noties/Markwon)
 
-This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/SimpleMDRenderer.kt) class to your project.
+This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/Merkja.kt) class to your project.
 
 
 <img src="markdown_screenshot.png" width="300">

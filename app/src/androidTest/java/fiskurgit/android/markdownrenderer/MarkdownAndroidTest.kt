@@ -2,7 +2,6 @@ package fiskurgit.android.markdownrenderer
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -18,7 +17,7 @@ import org.junit.Ignore
 class MarkdownAndroidTest {
 
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
-    private lateinit var renderer: SimpleMDRenderer
+    private lateinit var renderer: Merkja
 
     @Test
     fun useAppContext() {
@@ -33,7 +32,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        renderer = SimpleMDRenderer(dummyView){ matchEvent ->
+        renderer = Merkja(dummyView){ matchEvent ->
 
             val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565)
             renderer.insertImage(bitmap, matchEvent)
@@ -48,7 +47,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("a: Markdown Renderer\n", dummyView.text.toString())
@@ -60,7 +59,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("a: Markdown Renderer\n", dummyView.text.toString())
@@ -72,7 +71,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("a: Markdown Renderer\n", dummyView.text.toString())
@@ -84,7 +83,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())
@@ -96,7 +95,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())
@@ -108,7 +107,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())
@@ -120,7 +119,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())
@@ -132,7 +131,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())
@@ -144,7 +143,7 @@ class MarkdownAndroidTest {
 
         val dummyView = TextView(context)
         dummyView.text = md
-        val renderer = SimpleMDRenderer(dummyView)
+        val renderer = Merkja(dummyView)
         renderer.render()
 
         Assert.assertEquals("Markdown Renderer\n", dummyView.text.toString())

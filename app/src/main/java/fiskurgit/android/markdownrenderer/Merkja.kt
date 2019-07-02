@@ -23,7 +23,7 @@ import androidx.annotation.ColorInt
     I should probably have read this before starting work: https://developer.android.com/reference/java/util/regex/Pattern
 
  */
-class SimpleMDRenderer(private val textView: TextView, var externalHandler: (matchEvent: MatchEvent) -> Unit = { _ -> }) {
+class Merkja(private val textView: TextView, var externalHandler: (matchEvent: MatchEvent) -> Unit = { _ -> }) {
 
     companion object {
 
