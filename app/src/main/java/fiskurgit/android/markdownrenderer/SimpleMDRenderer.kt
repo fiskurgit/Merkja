@@ -29,20 +29,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
 
         private const val DEFAULT_MODE = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 
-        private const val SCHEME_H1 = 1
-        private const val SCHEME_H2 = 2
-        private const val SCHEME_H3 = 3
-        private const val SCHEME_H4 = 4
-        private const val SCHEME_H5 = 5
-        private const val SCHEME_H6 = 6
-        private const val SCHEME_CODE_INLINE = 7
-        private const val SCHEME_EMPHASES = 8
-        private const val SCHEME_BOLD = 9
-        private const val SCHEME_ORDERED_LIST = 12
-        private const val SCHEME_UNORDERED_LIST = 13
-        private const val SCHEME_QUOTE = 14
-        private const val SCHEME_CODE_BLOCK = 15
-
         const val SCHEME_IMAGE = 10
         const val SCHEME_LINK = 11
 
@@ -70,26 +56,26 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private lateinit var span: SpannableStringBuilder
 
     data class MatchEvent(val schemeType: Int, val matchText: String, val value: String, val start: Int = -1, val end: Int = -1)
-    data class MDScheme(val id: Int, val pattern: Pattern, val scale: Float? = null)
-    
-    private val schemes = mutableListOf<MDScheme>()
+
+    enum class Scheme(val pattern: Pattern, val scale: Float? = null) {
+        H6(Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f),
+        H5(Pattern.compile("$LINE_START#####\\s(.*\\R)"), 1.2f),
+        H4(Pattern.compile("$LINE_START####\\s(.*\\R)"), 1.4f),
+        H3(Pattern.compile("$LINE_START###\\s(.*\\R)"), 1.6f),
+        H2(Pattern.compile("$LINE_START##\\s(.*\\R)"), 1.8f),
+        H1(Pattern.compile("$LINE_START#\\s(.*\\R)"), 2.0f),
+        LINK(Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")),
+        BOLD(Pattern.compile("\\*\\*.*\\*\\*")),
+        EMPHASIS(Pattern.compile("_.*_")),
+        ORDERED_LIST(Pattern.compile("([0-9]+.)(.*)\\n")),
+        UNORDERED_LIST(Pattern.compile("\\*.*\\n")),
+        CODE_BLOCK(Pattern.compile("(?:```)\\n*\\X+(?:```)")),
+        CODE_INLINE(Pattern.compile("`.*`")),
+        QUOTE(Pattern.compile("$LINE_START>.*\\n")),
+        IMAGE(Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))"))
+    }
 
     init {
-        schemes.add(MDScheme(SCHEME_H6, Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f))
-        schemes.add(MDScheme(SCHEME_H5, Pattern.compile("$LINE_START#####\\s(.*\\R)"), 1.2f))
-        schemes.add(MDScheme(SCHEME_H4, Pattern.compile("$LINE_START####\\s(.*\\R)"), 1.4f))
-        schemes.add(MDScheme(SCHEME_H3, Pattern.compile("$LINE_START###\\s(.*\\R)"), 1.6f))
-        schemes.add(MDScheme(SCHEME_H2, Pattern.compile("$LINE_START##\\s(.*\\R)"), 1.8f))
-        schemes.add(MDScheme(SCHEME_H1, Pattern.compile("$LINE_START#\\s(.*\\R)"), 2.0f))
-        schemes.add(MDScheme(SCHEME_LINK, Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")))
-        schemes.add(MDScheme(SCHEME_BOLD, Pattern.compile("\\*\\*.*\\*\\*")))
-        schemes.add(MDScheme(SCHEME_EMPHASES, Pattern.compile("_.*_")))
-        schemes.add(MDScheme(SCHEME_ORDERED_LIST, Pattern.compile("([0-9]+.)(.*)\\n")))
-        schemes.add(MDScheme(SCHEME_UNORDERED_LIST, Pattern.compile("\\*.*\\n")))
-        schemes.add(MDScheme(SCHEME_CODE_BLOCK, Pattern.compile("(?:```)\\n*\\X+(?:```)")))
-        schemes.add(MDScheme(SCHEME_CODE_INLINE, Pattern.compile("`.*`")))
-        schemes.add(MDScheme(SCHEME_QUOTE, Pattern.compile("$LINE_START>.*\\n")))
-        schemes.add(MDScheme(SCHEME_IMAGE, Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))")))
         textView.movementMethod = LinkMovementMethod.getInstance()
     }
 
@@ -97,15 +83,15 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
 
         span = SpannableStringBuilder(textView.text)
 
-        for(scheme in schemes) {
+        for(scheme in Scheme.values()){
             val matcher = scheme.pattern.matcher(span)
             var removed = 0
             while (matcher.find()) {
                 start = matcher.start() - removed
                 end = matcher.end() - removed
 
-                when (scheme.id){
-                    SCHEME_CODE_BLOCK -> {
+                when (scheme.name){
+                    Scheme.CODE_BLOCK.name -> {
                         span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
 
                         if (isAndroidPPlus()) span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
@@ -115,24 +101,24 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
 
                         removed += 6
                     }
-                    SCHEME_QUOTE -> {
+                    Scheme.QUOTE.name -> {
                         span.replace(start+1, start + 2, " ")//replace > with space
 
                         //todo - line height needs to be increased too if possible:
                         if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
                     }
-                    SCHEME_ORDERED_LIST -> {
+                    Scheme.ORDERED_LIST.name -> {
                         val number = matcher.group(1)
                         span.setSpan(StyleSpan(Typeface.BOLD), start, start + number.length, DEFAULT_MODE)
                         if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                     }
-                    SCHEME_UNORDERED_LIST -> {
+                    Scheme.UNORDERED_LIST.name -> {
                         //There is BulletSpan but this is less problematic, and the more useful BulletSpan is AndroidP onwards anyway
                         span.replace(start, start + 1, "•")
 
                         if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                     }
-                    SCHEME_LINK -> {
+                    Scheme.LINK.name -> {
                         span.setSpan(ForegroundColorSpan(linkColor), start, end, DEFAULT_MODE)
 
                         val linkText = matcher.group(1)
@@ -146,7 +132,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         removed += (end - (start+1)) - linkText.length
 
                     }
-                    SCHEME_IMAGE -> {
+                    Scheme.IMAGE.name -> {
                         val imageRes = findResource(matcher.group(1))
                         if(imageRes != null){
                             val drawable = textView.context.getDrawable(imageRes)
@@ -174,7 +160,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                             externalHandler(matchEvent)
                         }
                     }
-                    SCHEME_H6, SCHEME_H5, SCHEME_H4, SCHEME_H3, SCHEME_H2, SCHEME_H1 -> {
+                    Scheme.H6.name, Scheme.H5.name, Scheme.H4.name, Scheme.H3.name, Scheme.H2.name, Scheme.H1.name -> {
                         val value =  matcher.group(1)
                         span.delete(start, end)
                         removed += (end - start) - value.length
@@ -183,19 +169,19 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         span.setSpan(StyleSpan(Typeface.BOLD), start, start + value.length, DEFAULT_MODE)
                         span.setSpan(RelativeSizeSpan(scheme.scale ?: 1f), start, start + value.length, DEFAULT_MODE)
                     }
-                    SCHEME_BOLD -> {
+                    Scheme.BOLD.name -> {
                         span.setSpan(StyleSpan(Typeface.BOLD), start, end, DEFAULT_MODE)
                         span.delete(end-2, end)
                         span.delete(start, start+2)
                         removed += 4
                     }
-                    SCHEME_EMPHASES -> {
+                    Scheme.EMPHASIS.name -> {
                         span.setSpan(StyleSpan(Typeface.ITALIC), start, end, DEFAULT_MODE)
                         span.delete(end - 1, end)
                         span.delete(start, start + 1)
                         removed += 2
                     }
-                    SCHEME_CODE_INLINE -> {
+                    Scheme.CODE_INLINE.name -> {
                         if (isAndroidPPlus()) span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
 
                         span.setSpan(BackgroundColorSpan(codeBackground), start, end, DEFAULT_MODE)
