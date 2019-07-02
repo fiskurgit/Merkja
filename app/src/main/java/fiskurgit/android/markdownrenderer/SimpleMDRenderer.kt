@@ -9,12 +9,10 @@ import android.text.style.*
 import android.content.res.Resources
 import android.graphics.*
 import android.text.method.LinkMovementMethod
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.graphics.RectF
 import androidx.annotation.ColorInt
-
 
 /*
 
@@ -82,53 +80,35 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         val scale: Float? = null
     )
 
-    private val h1Scheme = MDScheme(SCHEME_H1, Pattern.compile("$LINE_START#\\s(.*\\R)"), 2.0f)
-    private val h2Scheme = MDScheme(SCHEME_H2, Pattern.compile("$LINE_START##\\s(.*\\R)"), 1.8f)
-    private val h3Scheme = MDScheme(SCHEME_H3, Pattern.compile("$LINE_START###\\s(.*\\R)"), 1.6f)
-    private val h4Scheme = MDScheme(SCHEME_H4, Pattern.compile("$LINE_START####\\s(.*\\R)"), 1.4f)
-    private val h5Scheme = MDScheme(SCHEME_H5, Pattern.compile("$LINE_START#####\\s(.*\\R)"), 1.2f)
-    private val h6Scheme = MDScheme(SCHEME_H6, Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f)
-    private val boldScheme = MDScheme(SCHEME_BOLD, Pattern.compile("\\*\\*.*\\*\\*"))
-    private val emphasesScheme = MDScheme(SCHEME_EMPHASES, Pattern.compile("_.*_"))
-    private val inlineCodeScheme = MDScheme(SCHEME_CODE_INLINE, Pattern.compile("`.*`"))
-    private val imageScheme = MDScheme(SCHEME_IMAGE, Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))"))
-    private val linkScheme = MDScheme(SCHEME_LINK, Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))"))
-    private val orderedListScheme = MDScheme(SCHEME_ORDERED_LIST, Pattern.compile("([0-9]+.)(.*)\\n"))
-    private val unorderedListScheme = MDScheme(SCHEME_UNORDERED_LIST, Pattern.compile("\\*.*\\n"))
-    private val quoteScheme = MDScheme(SCHEME_QUOTE, Pattern.compile("$LINE_START>.*\\n"))
-    private val codeBlockScheme = MDScheme(SCHEME_CODE_BLOCK, Pattern.compile("(?:```)\\n*\\X+(?:```)"))
+    private var placeholderCounter = 0
+    private lateinit var span: SpannableStringBuilder
 
     private val schemes = mutableListOf<MDScheme>()
 
-    private var placeholderCounter = 0
-
     init {
-        schemes.add(h6Scheme)
-        schemes.add(h5Scheme)
-        schemes.add(h4Scheme)
-        schemes.add(h3Scheme)
-        schemes.add(h2Scheme)
-        schemes.add(h1Scheme)
-        schemes.add(linkScheme)
-        schemes.add(boldScheme)
-        schemes.add(emphasesScheme)
-        schemes.add(orderedListScheme)
-        schemes.add(unorderedListScheme)
-        schemes.add(codeBlockScheme)
-        schemes.add(inlineCodeScheme)
-        schemes.add(quoteScheme)
-        schemes.add(imageScheme)
+        schemes.add(MDScheme(SCHEME_H6, Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f))
+        schemes.add(MDScheme(SCHEME_H5, Pattern.compile("$LINE_START#####\\s(.*\\R)"), 1.2f))
+        schemes.add(MDScheme(SCHEME_H4, Pattern.compile("$LINE_START####\\s(.*\\R)"), 1.4f))
+        schemes.add(MDScheme(SCHEME_H3, Pattern.compile("$LINE_START###\\s(.*\\R)"), 1.6f))
+        schemes.add(MDScheme(SCHEME_H2, Pattern.compile("$LINE_START##\\s(.*\\R)"), 1.8f))
+        schemes.add(MDScheme(SCHEME_H1, Pattern.compile("$LINE_START#\\s(.*\\R)"), 2.0f))
+        schemes.add(MDScheme(SCHEME_LINK, Pattern.compile("(?:[^!]\\[(.*?)]\\((.*?)\\))")))
+        schemes.add(MDScheme(SCHEME_BOLD, Pattern.compile("\\*\\*.*\\*\\*")))
+        schemes.add(MDScheme(SCHEME_EMPHASES, Pattern.compile("_.*_")))
+        schemes.add(MDScheme(SCHEME_ORDERED_LIST, Pattern.compile("([0-9]+.)(.*)\\n")))
+        schemes.add(MDScheme(SCHEME_UNORDERED_LIST, Pattern.compile("\\*.*\\n")))
+        schemes.add(MDScheme(SCHEME_CODE_BLOCK, Pattern.compile("(?:```)\\n*\\X+(?:```)")))
+        schemes.add(MDScheme(SCHEME_CODE_INLINE, Pattern.compile("`.*`")))
+        schemes.add(MDScheme(SCHEME_QUOTE, Pattern.compile("$LINE_START>.*\\n")))
+        schemes.add(MDScheme(SCHEME_IMAGE, Pattern.compile("(?:!\\[(?:.*?)]\\((.*?)\\))")))
         textView.movementMethod = LinkMovementMethod.getInstance()
     }
-
-    private lateinit var span: SpannableStringBuilder
 
     fun render(){
 
         span = SpannableStringBuilder(textView.text)
 
         for(scheme in schemes) {
-            l("Evaluating scheme: ${scheme.id}")
             val matcher = scheme.pattern.matcher(span)
             var removed = 0
             while (matcher.find()) {
@@ -139,9 +119,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                     SCHEME_CODE_BLOCK -> {
                         span.setSpan(FullWidthBackgroundSpan(Color.parseColor("#ededed")), start, end, DEFAULT_MODE)
 
-                        when {
-                            isAndroidPPlus() -> span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
-                        }
+                        if (isAndroidPPlus()) span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
 
                         span.delete(start, start + 3)
                         span.delete(end - 4, end - 1)
@@ -152,24 +130,18 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         span.replace(start+1, start + 2, " ")//replace > with space
 
                         //todo - line height needs to be increased too if possible:
-                        when {
-                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
-                        }
+                        if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.LTGRAY, dpToPx(4), 0), start, end, DEFAULT_MODE)
                     }
                     SCHEME_ORDERED_LIST -> {
                         val number = matcher.group(1)
                         span.setSpan(StyleSpan(Typeface.BOLD), start, start + number.length, DEFAULT_MODE)
-                        when {
-                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
-                        }
+                        if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                     }
                     SCHEME_UNORDERED_LIST -> {
                         //There is BulletSpan but this is less problematic, and the more useful BulletSpan is AndroidP onwards anyway
                         span.replace(start, start + 1, "•")
 
-                        when {
-                            isAndroidPPlus() -> span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
-                        }
+                        if (isAndroidPPlus()) span.setSpan(QuoteSpan(Color.TRANSPARENT, 0, (12 * Resources.getSystem().displayMetrics.density).toInt()), start, end, DEFAULT_MODE)
                     }
                     SCHEME_LINK -> {
                         span.setSpan(ForegroundColorSpan(linkColor), start, end, DEFAULT_MODE)
@@ -235,9 +207,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
                         removed += 2
                     }
                     SCHEME_CODE_INLINE -> {
-                        when {
-                            isAndroidPPlus() -> span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
-                        }
+                        if (isAndroidPPlus()) span.setSpan(TypefaceSpan(Typeface.MONOSPACE), start, end, DEFAULT_MODE)
 
                         span.setSpan(BackgroundColorSpan(codeBackground), start, end, DEFAULT_MODE)
 
@@ -252,10 +222,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         textView.text =  span
     }
 
-    private fun dpToPx(dp: Int): Int{
-        return (dp * Resources.getSystem().displayMetrics.density).toInt()
-    }
-
     fun insertImage(bitmap: Bitmap?, matchEvent: MatchEvent) {
         if(bitmap == null) return
 
@@ -265,9 +231,6 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
             span.setSpan(ImageSpan(textView.context, resizeImage(bitmap)), start, start + 1, DEFAULT_MODE)
             span.delete(start + 1, start + matchEvent.matchText.length)
             textView.text = span
-        }else {
-            val placeholder = matchEvent.matchText
-            l("Could not find placeholder $placeholder")
         }
     }
 
@@ -299,17 +262,12 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
         init {
             paint.color = color
         }
-        
+
         override fun drawBackground(c: Canvas?, p: Paint?, left: Int, right: Int, top: Int, baseline: Int, bottom: Int, text: CharSequence?, start: Int, end: Int, lnum: Int) {
             c?.drawRect(RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat()), paint)
         }
     }
 
-    private fun isAndroidPPlus(): Boolean{
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-    }
-
-    private fun l(message: String){
-        Log.d("MDL:::", "renderer: $message")
-    }
+    private fun dpToPx(dp: Int): Int = (dp * Resources.getSystem().displayMetrics.density).toInt()
+    private fun isAndroidPPlus(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 }
