@@ -4,7 +4,7 @@ A very simple single class Markdown renderer for when you only need the basic sy
 
 It's not meant to be a replacement for a full-featured library, if you need full Markdown support use [Markwon](https://github.com/noties/Markwon)
 
-This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/Merkja.kt) class to your project.
+This isn't a library, just copy the [Merkja](https://github.com/fiskurgit/Merkja/blob/master/app/src/main/java/fiskurgit/android/markdownrenderer/Merkja.kt) class to your project.
 
 
 <img src="markdown_screenshot.png" width="300">
@@ -13,7 +13,7 @@ This isn't a library, just copy the [SimpleMDRenderer](https://github.com/fiskur
 
 ```kotlin
 text_view.text = markdownString
-SimpleMDRenderer(text_view).render()
+Merkja(text_view).render()
 ```
 
 ## Handling Links and Images
@@ -21,14 +21,14 @@ SimpleMDRenderer(text_view).render()
 ```kotlin
 text_view.text = markdownString
 
-val simpleMDRenderer = SimpleMDRenderer(text_view) { matchEvent ->
+val merkja = Merkja(text_view) { matchEvent ->
 
     when (matchEvent.schemeType){
-        SimpleMDRenderer.SCHEME_IMAGE -> loadImage(matchEvent)
-        SimpleMDRenderer.SCHEME_LINK -> handleLink(matchEvent)
+        Merkja.SCHEME_IMAGE -> loadImage(matchEvent)
+        Merkja.SCHEME_LINK -> handleLink(matchEvent)
     }
 }
-simpleMDRenderer.render()
+merkja.render()
 
 ...
 
@@ -36,7 +36,7 @@ fun loadImage(matchEvent: MatchEvent){
     val imageUrl = matchEvent.value
     //fetch image async then:
     runOnUiThread {
-        simpleMDRenderer.insertImage(bitmap, matchEvent)
+        merkja.insertImage(bitmap, matchEvent)
     }
 }
 
@@ -59,7 +59,6 @@ fun loadImage(matchEvent: MatchEvent){
 
 ## Coming Soon
 
-* Custom links
 * Horizontal rule
 
 ## Not Supported
