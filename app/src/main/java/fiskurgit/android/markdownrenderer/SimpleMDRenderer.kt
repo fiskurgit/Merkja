@@ -55,7 +55,7 @@ class SimpleMDRenderer(private val textView: TextView, var externalHandler: (mat
     private var placeholderCounter = 0
     private lateinit var span: SpannableStringBuilder
 
-    data class MatchEvent(val schemeType: Int, val matchText: String, val value: String, val start: Int = -1, val end: Int = -1)
+    data class MatchEvent(val schemeType: Int, val matchText: String, val value: String)
 
     enum class Scheme(val pattern: Pattern, val scale: Float? = null) {
         H6(Pattern.compile("$LINE_START######\\s(.*\\R)"), 1.0f),
